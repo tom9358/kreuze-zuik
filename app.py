@@ -8,13 +8,28 @@ app = Flask(__name__)
 
 JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'aggregated_text_kreuze.json')
 
-def split_into_sentences(text):
+def split_into_sentences(text, max_length=99):
     """
-    Splits text into sentences using regex. Handles basic sentence delimiters.
+    Splits text into sentences by detecting sentence ending punctuation with regex. Also splits long chunks.
     """
-    sentence_endings = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|\!)\s')
-    sentences = sentence_endings.split(text)
-    return [sentence.strip() for sentence in sentences if sentence.strip()]
+    # Regex for standard sentence delimiters
+    sentence_endings = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<![A-Z]\.)(?<=\.|\?|\!)\s')
+    raw_sentences = sentence_endings.split(text)
+    
+    sentences = []
+    for sentence in raw_sentences:
+        sentence = sentence.strip()
+        if len(sentence) > max_length:
+            # Split long "sentences" further on capital letters after spaces
+            long_sentence_split = re.split(r'(?<=\s)(?=[A-Z])', sentence)
+            for sub_sentence in long_sentence_split:
+                if sub_sentence.strip():
+                    sentences.append(sub_sentence.strip())
+        else:
+            if sentence:
+                sentences.append(sentence)
+    
+    return sentences
 
 def load_aggregated_data():
     """Load the JSON file containing aggregated text data."""
