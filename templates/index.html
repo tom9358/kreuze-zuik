@@ -3,20 +3,20 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Word Search</title>
+        <title>Kreuze veurbeeldzuiker</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     </head>
 <body>
-    <h1>Kreuze veurbeeldzuiker</h1>
+    <h1><a href="https://dideldom.nu/tiedschrift-kreuze/">Kreuze</a> veurbeeldzuiker</h1>
 
     <form id="search-form">
-        <label for="search_pattern">Search Pattern:</label>
+        <label for="search_pattern">Zuikterm: (regex waarkt! biev. mit <i>stoet(jes)*</i> vindst stoet én stoetjes!</label>
         <input type="text" id="search_pattern" name="search_pattern" value="stoetje" required>
 
-        <label for="max_lines">Max Lines to Process:</label>
-        <input type="number" id="max_lines" name="max_lines" value="30">
+        <label for="max_lines">Max. aantal veurbeelden:</label>
+        <input type="number" id="max_lines" name="max_lines" value="300">
 
-        <button type="submit">Process Files</button>
+        <button type="submit">Zuiken!</button>
     </form>
 
     <div class="result" id="result"></div>
