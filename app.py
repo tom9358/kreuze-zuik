@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sentences_kreuze.json')
 with open(JSON_FILE, 'r', encoding='utf-8') as file:
-        AGGREGATED_DATA = json.load(file)
+    AGGREGATED_DATA = json.load(file)
 
 with open("kreuze_freq_wordlist.txt", 'r', encoding='utf-8') as file:
     WORDLIST = [line.split('\t')[0] for line in file.readlines()]
@@ -49,6 +49,11 @@ def process():
     max_lines = int(request.form['max_lines'])
 
     examples, match_counts = find_example_sentences(search_pattern, max_lines)
+
+    if not any(examples.values()):
+        # No matches found; suggest closest words
+        suggestions = get_close_matches(search_pattern, WORDLIST, n=7)
+        return jsonify({'suggestions': suggestions})
 
     # Prepare a JSON structure for separate display
     hits_per_file = {filename: data['count'] for filename, data in examples.items()}

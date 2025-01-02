@@ -24,7 +24,7 @@
     <script>
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-
+    
             const formData = new FormData(this);
             fetch('/process', {
                 method: 'POST',
@@ -34,27 +34,39 @@
             .then(data => {
                 const resultDiv = document.getElementById('result');
                 resultDiv.innerHTML = ''; // Clear previous results
-
-                // Section 1: Files with Hits
-                const hitsDiv = document.createElement('div');
-                hitsDiv.classList.add('list');
-                hitsDiv.innerHTML = '<h3>Files with Hits</h3>';
-                for (let file in data.hits_per_file) {
-                    hitsDiv.innerHTML += `<p>${file}: ${data.hits_per_file[file]} hits</p>`;
-                }
-                resultDiv.appendChild(hitsDiv);
-
-                // Section 2: Example Sentences
-                const examplesDiv = document.createElement('div');
-                examplesDiv.classList.add('list');
-                examplesDiv.innerHTML = '<h3>Example Sentences</h3>';
-                for (let file in data.examples) {
-                    examplesDiv.innerHTML += `<h4>${file}</h4>`;
-                    data.examples[file].forEach(line => {
-                        examplesDiv.innerHTML += `<p>${line}</p>`;
+    
+                if (data.suggestions) {
+                    // Display suggestions
+                    const suggestionsDiv = document.createElement('div');
+                    suggestionsDiv.classList.add('list');
+                    suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
+                    data.suggestions.forEach(suggestion => {
+                        suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
                     });
+                    resultDiv.appendChild(suggestionsDiv);
+                } else {
+                    // Display results if any
+                    // Section 1: Files with Hits
+                    const hitsDiv = document.createElement('div');
+                    hitsDiv.classList.add('list');
+                    hitsDiv.innerHTML = '<h3>Files with Hits</h3>';
+                    for (let file in data.hits_per_file) {
+                        hitsDiv.innerHTML += `<p>${file}: ${data.hits_per_file[file]} hits</p>`;
+                    }
+                    resultDiv.appendChild(hitsDiv);
+    
+                    // Section 2: Example Sentences
+                    const examplesDiv = document.createElement('div');
+                    examplesDiv.classList.add('list');
+                    examplesDiv.innerHTML = '<h3>Example Sentences</h3>';
+                    for (let file in data.examples) {
+                        examplesDiv.innerHTML += `<h4>${file}</h4>`;
+                        data.examples[file].forEach(line => {
+                            examplesDiv.innerHTML += `<p>${line}</p>`;
+                        });
+                    }
+                    resultDiv.appendChild(examplesDiv);
                 }
-                resultDiv.appendChild(examplesDiv);
             })
             .catch(error => console.error('Error:', error));
         });
