@@ -11,7 +11,7 @@
 
     <form id="search-form">
         <label for="search_pattern">Zuikterm: (regex waarkt! biev. mit <i>stoet(jes)*</i> vindst stoet én stoetjes!</label>
-        <input type="text" id="search_pattern" name="search_pattern" value="stoetje" required>
+        <input type="text" id="search_pattern" name="search_pattern" value="stoet(jes)*" required>
 
         <label for="max_lines">Max. aantal veurbeelden:</label>
         <input type="number" id="max_lines" name="max_lines" value="300">
@@ -21,21 +21,22 @@
 
     <div class="result" id="result"></div>
 
-    <script>
-        document.getElementById('search-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-    
-            const formData = new FormData(this);
-            fetch('/process', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.innerHTML = ''; // Clear previous results
-    
-                if (data.suggestions) {
+<script>
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        fetch('/process', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = ''; // Clear previous results
+
+            if (data.suggestions) {
+                if (data.suggestions.length > 0) {
                     // Display suggestions
                     const suggestionsDiv = document.createElement('div');
                     suggestionsDiv.classList.add('list');
@@ -45,31 +46,30 @@
                     });
                     resultDiv.appendChild(suggestionsDiv);
                 } else {
-                    // Display results if any
-                    // Section 1: Files with Hits
-                    const hitsDiv = document.createElement('div');
-                    hitsDiv.classList.add('list');
-                    hitsDiv.innerHTML = '<h3>Files with Hits</h3>';
-                    for (let file in data.hits_per_file) {
-                        hitsDiv.innerHTML += `<p>${file}: ${data.hits_per_file[file]} hits</p>`;
-                    }
-                    resultDiv.appendChild(hitsDiv);
-    
-                    // Section 2: Example Sentences
-                    const examplesDiv = document.createElement('div');
-                    examplesDiv.classList.add('list');
-                    examplesDiv.innerHTML = '<h3>Example Sentences</h3>';
-                    for (let file in data.examples) {
-                        examplesDiv.innerHTML += `<h4>${file}</h4>`;
-                        data.examples[file].forEach(line => {
-                            examplesDiv.innerHTML += `<p>${line}</p>`;
-                        });
-                    }
-                    resultDiv.appendChild(examplesDiv);
+                    // Display "niks vonden" when no suggestions are present
+                    const noSuggestionsDiv = document.createElement('div');
+                    noSuggestionsDiv.classList.add('list');
+                    noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
+                    resultDiv.appendChild(noSuggestionsDiv);
                 }
-            })
-            .catch(error => console.error('Error:', error));
-        });
-    </script>
+            } else {
+                // Section: Example Sentences with hits
+                const examplesDiv = document.createElement('div');
+                examplesDiv.classList.add('list');
+                examplesDiv.innerHTML = '<h3>Veurbeeldzinnen:</h3>';
+                for (let file in data.examples) {
+                    const hitsCount = data.hits_per_file[file];
+                    examplesDiv.innerHTML += `<h4>${file} (${hitsCount} zinnen)</h4>`;
+                    data.examples[file].forEach(line => {
+                        examplesDiv.innerHTML += `<p>${line}</p>`;
+                    });
+                }
+                resultDiv.appendChild(examplesDiv);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+</script>
+
 </body>
 </html>
