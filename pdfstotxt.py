@@ -150,6 +150,7 @@ OUTPUT_WORDLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kreu
 pre_tokenizer = Sequence([Whitespace(), Punctuation()])
 
 def tokenize(sentence: str) -> list[str]:
+    sentence = re.sub(r"\bd'", "de ", sentence, flags=re.IGNORECASE)
     return [tok[0] for tok in pre_tokenizer.pre_tokenize_str(sentence)]
 
 def pass_check(word: str, count: int) -> bool: # seems to have a VERY good quality/complexity ratio
