@@ -81,6 +81,7 @@ import os
 import re
 import json
 from collections import defaultdict
+import unicodedata
 
 JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'aggregated_text_kreuze.json')
 PREPROCESSED_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sentences_kreuze.json')
@@ -91,7 +92,8 @@ def split_into_sentences(text, max_length=99) -> list:
     Also splits long chunks.
     """
     # Remove hyphenation
-    text = re.sub(r'-\n', '',text)
+    text = re.sub(r'-\n', '',text).replace('  ', ' ')
+    text = unicodedata.normalize("NFKC", text)
 
     # Regex for standard sentence delimiters
     sentence_endings = re.compile(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<![A-Z]\.)(?<=\.|\?|\!)\s')
@@ -142,6 +144,7 @@ import json
 from collections import Counter, defaultdict
 from tokenizers.pre_tokenizers import Whitespace, Punctuation
 from tokenizers.pre_tokenizers import Sequence
+import unicodedata
 
 # Define the file paths
 PREPROCESSED_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sentences_kreuze.json')
@@ -154,13 +157,42 @@ def tokenize(sentence: str) -> list[str]:
     return [tok[0] for tok in pre_tokenizer.pre_tokenize_str(sentence)]
 
 def pass_check(word: str, count: int) -> bool: # seems to have a VERY good quality/complexity ratio
-    if count < 3: return False
+    if count < 1: return False
     # Let's only permit alphanumeric characters:
     if any(not char.isalpha() for char in word):
         return False
     for char in 'åõüāēōšôûîâÅÕÜĀĒŌŠÔÛÎÂíéáúñçßÍÉÁÚÑÇẞ':
-        if char in word: return False
+        if char in word:
+            return False
+    # Let's also filter out the most common other alphabets, i.e. Greek and Cyrillic:
+    for char in word:
+        if char in 'αβγδεζηθικλμνξοπρστυφχψωабвгдежзийклмнопрстуфхцчшщъыьэюяΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ':
+            return False
     return True
+
+def postprocess(counter: Counter) -> Counter:
+    """
+    Merges word frequencies ignoring case, and retains the most frequent casing variant.
+    In case of a tie, prefers the all-lowercase variant.
+    """
+    freq_dict = defaultdict(int)
+    casing_variants = defaultdict(Counter)
+
+    for word, freq in counter.items():
+        lower_word = word.lower()
+        freq_dict[lower_word] += freq
+        casing_variants[lower_word][word] += freq
+
+    result = Counter()
+    for lower_word, total_freq in freq_dict.items():
+        variants = casing_variants[lower_word]
+        most_common_freq = variants.most_common(1)[0][1]
+
+        tied_variants = [v for v, f in variants.items() if f == most_common_freq]
+        best_variant = min((v for v in tied_variants if v.islower()), default=min(tied_variants))
+
+        result[best_variant] = total_freq
+    return result
 
 def create_wordlist_from_sentences() -> None:
     """
@@ -190,57 +222,5 @@ def create_wordlist_from_sentences() -> None:
     
     print(f"Wordlist created successfully at {OUTPUT_WORDLIST}")
 
-def postprocess(counter: Counter) -> Counter:
-    """
-    Merges word frequencies ignoring case, and retains the most frequent casing variant.
-    In case of a tie, prefers the all-lowercase variant.
-    """
-    freq_dict = defaultdict(int)
-    casing_variants = defaultdict(Counter)
-
-    for word, freq in counter.items():
-        lower_word = word.lower()
-        freq_dict[lower_word] += freq
-        casing_variants[lower_word][word] += freq
-
-    result = Counter()
-    for lower_word, total_freq in freq_dict.items():
-        variants = casing_variants[lower_word]
-        most_common_freq = variants.most_common(1)[0][1]
-
-        tied_variants = [v for v, f in variants.items() if f == most_common_freq]
-        best_variant = min((v for v in tied_variants if v.islower()), default=min(tied_variants))
-
-        result[best_variant] = total_freq
-    return result
-
 # Create the wordlist
 create_wordlist_from_sentences()
-
-# Plotting some stats about the data:
-import matplotlib.pyplot as plt
-def plot_word_frequencies(input_file: str) -> None:
-    """
-    Plots the frequency of words from a given input file.
-    input_file (str): Path to the input file containing words and their frequencies.
-    """
-    frequencies = []
-    words = []
-
-    with open(input_file, 'r', encoding='utf-8') as file:
-        for line in file:
-            word, freq = line.strip().split('\t')
-            frequencies.append(int(freq))
-            words.append(word)
-
-    plt.figure(figsize=(12, 6))
-    plt.bar(words[:50], frequencies[:50])  # Plot only the first 50 for clarity
-    plt.xticks(rotation=90)
-    plt.title('Word Frequencies')
-    plt.xlabel('Words')
-    plt.ylabel('Frequency')
-    plt.tight_layout()
-    plt.show()
-
-# Data inspection
-plot_word_frequencies(OUTPUT_WORDLIST)

@@ -1,0 +1,158 @@
+#About the json and the old txt files:
+
+import os
+import json
+import re
+import unicodedata
+
+JSON_FILE = 'sentences_kreuze.json'
+
+def count_unique_words(JSON_FILE: str = 'sentences_kreuze.json'):
+    with open(JSON_FILE, 'r', encoding='utf-8') as file:
+        data = json.load(file)
+
+    word_set = set()
+    for pages in data.values():
+        for page in pages:
+            page = page.replace('-\n', '').replace('\n', ' ').replace("d'", 'de ').lower()
+            page = unicodedata.normalize("NFKC", page)
+            words = re.findall(r'\b\w+\b', page)
+            word_set.update(words)
+
+    print(f"Unique words: {len(word_set)}")
+
+count_unique_words()
+count_unique_words("aggregated_text_kreuze.json")
+
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+TXT_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..'))
+
+def normalize(text):
+    return text.replace('-\n', '').replace('\n', ' ').replace("d'", 'de ').lower()
+
+def extract_words(text):
+    return re.findall(r'\b\w+\b', text)
+
+def count_unique_words():
+    word_set = set()
+
+    txt_contents = []
+    for fname in os.listdir(TXT_DIR):
+        if fname.endswith('.txt'):
+            path = os.path.join(TXT_DIR, fname)
+            with open(path, 'r', encoding='utf-8') as f:
+                txt_contents.append(f.read())
+
+    if txt_contents:
+        combined_txt = ' '.join(txt_contents)
+        normalized_txt = normalize(combined_txt)
+        words = extract_words(normalized_txt)
+        word_set.update(words)
+
+    print(f"Unique words in TXT files: {len(word_set)}")
+
+count_unique_words()
+
+###############
+
+# Data analysis of the new data:
+
+OUTPUT_WORDLIST = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kreuze_freq_wordlist.txt')
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from collections import Counter
+
+sns.set_theme(style="whitegrid")
+
+def load_wordlist(path):
+    words = []
+    freqs = []
+    with open(path, 'r', encoding='utf-8') as f:
+        for line in f:
+            word, freq = line.strip().split('\t')
+            words.append(word)
+            freqs.append(int(freq))
+    return words, freqs
+
+
+def plot_top_words(words, freqs, top_n=50):
+    plt.figure(figsize=(12, 6))
+    plt.bar(words[:top_n], freqs[:top_n])
+    plt.xticks(rotation=90)
+    plt.title(f'Top {top_n} Word Frequencies')
+    plt.xlabel('Words')
+    plt.ylabel('Frequency')
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_zipf(freqs):
+    ranks = np.arange(1, len(freqs) + 1)
+    plt.figure(figsize=(8, 6))
+    plt.loglog(ranks, freqs, marker='.')
+    plt.title("Zipf's Law: Frequency ~ 1 / Rank")
+    plt.xlabel('Rank (log)')
+    plt.ylabel('Frequency (log)')
+    plt.tight_layout()
+    plt.show()
+
+
+def print_basic_stats(words, freqs):
+    total_tokens = sum(freqs)
+    unique_words = len(words)
+    avg_freq = total_tokens / unique_words
+    print(f'Total tokens: {total_tokens:,}')
+    print(f'Unique words (types): {unique_words:,}')
+    print(f'Average frequency per word: {avg_freq:.2f}')
+    print(f'Most frequent word: "{words[0]}" ({freqs[0]} occurrences)')
+
+
+def plot_coverage_curve(freqs, steps=[100, 500, 1000, 5000, 10000, 20000]):
+    total = sum(freqs)
+    cumulative = np.cumsum(freqs)
+    coverage = [cumulative[n-1] / total for n in steps if n <= len(freqs)]
+    plt.figure(figsize=(8, 6))
+    plt.plot(steps[:len(coverage)], coverage, marker='o')
+    plt.title('Coverage Curve')
+    plt.xlabel('Top N Words')
+    plt.ylabel('Cumulative Coverage (Proportion)')
+    plt.ylim(0, 1)
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_word_length_distribution(words):
+    lengths = [len(word) for word in words]
+    length_counts = Counter(lengths)
+    lengths_sorted = sorted(length_counts.items())
+    x, y = zip(*lengths_sorted)
+    plt.figure(figsize=(8, 6))
+    plt.bar(x, y)
+    plt.title('Word Length Distribution')
+    plt.xlabel('Word Length')
+    plt.ylabel('Number of Words')
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_frequency_histogram(freqs, max_bins=50):
+    plt.figure(figsize=(8, 6))
+    plt.hist(freqs, bins=max_bins, log=True)
+    plt.title('Histogram of Word Frequencies')
+    plt.xlabel('Frequency')
+    plt.ylabel('Number of Words (log scale)')
+    plt.tight_layout()
+    plt.show()
+
+
+def full_analysis(path):
+    words, freqs = load_wordlist(path)
+    print_basic_stats(words, freqs)
+    plot_top_words(words, freqs)
+    plot_zipf(freqs)
+    plot_coverage_curve(freqs)
+    plot_word_length_distribution(words)
+    plot_frequency_histogram(freqs)
+
+full_analysis(OUTPUT_WORDLIST)
