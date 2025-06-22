@@ -62,6 +62,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from collections import Counter
+import string
 
 sns.set_theme(style="whitegrid")
 
@@ -145,14 +146,99 @@ def plot_frequency_histogram(freqs, max_bins=50):
     plt.tight_layout()
     plt.show()
 
+def plot_char_frequencies(words):
+    char_counts = Counter()
+    for word in words:
+        for char in word:
+            char_counts[char] += 1
+
+    # Sort characters by frequency for plotting
+    sorted_chars = sorted(char_counts.items(), key=lambda item: item[1], reverse=True)
+    chars, freqs = zip(*sorted_chars)
+
+    # Plot 1: All characters
+    plt.figure(figsize=(15, 7))
+    plt.bar(chars, freqs)
+    plt.title('Character Frequency Distribution (All Characters)')
+    plt.xlabel('Characters')
+    plt.ylabel('Frequency')
+    plt.yscale('log')
+    plt.tight_layout()
+    plt.show()
+
+    # Plot 2: Non-Latin alphabet characters
+    non_latin_chars_counts = Counter()
+    latin_alphabet = set(string.ascii_letters)
+    for char, freq in char_counts.items():
+        if char not in latin_alphabet:
+            non_latin_chars_counts[char] = freq
+
+    if non_latin_chars_counts: # Only plot if there are non-Latin characters
+        sorted_non_latin = sorted(non_latin_chars_counts.items(), key=lambda item: item[1], reverse=True)
+        non_latin_chars, non_latin_freqs = zip(*sorted_non_latin)
+
+        plt.figure(figsize=(15, 7))
+        plt.bar(non_latin_chars, non_latin_freqs)
+        plt.title('Character Frequency Distribution (Non-Latin Alphabet Characters)')
+        plt.xlabel('Characters')
+        plt.ylabel('Frequency')
+        plt.yscale('log')
+        plt.tight_layout()
+        plt.show()
+        for char in non_latin_chars: print(char, end='')
+    else:
+        print("No non-Latin alphabet characters found to plot.")
+
+def plot_frequency_cutoff_ranks(freqs):
+    """
+    Plots the rank (line number) against the frequency,
+    showing only the last occurrence of each unique frequency value.
+    This illustrates for a given frequency Y, how many words (rank X)
+    have at least that frequency.
+    """
+    if not freqs:
+        print("No frequencies to plot for cutoff ranks.")
+        return
+
+    ranks_to_plot = []
+    freqs_to_plot = []
+    seen_frequencies = set()
+
+    # Iterate from the end to find the last occurrence of each frequency
+    for i in range(len(freqs) - 1, -1, -1):
+        current_freq = freqs[i]
+        if current_freq not in seen_frequencies:
+            ranks_to_plot.append(i + 1) # i+1 because ranks are 1-based
+            freqs_to_plot.append(current_freq)
+            seen_frequencies.add(current_freq)
+
+    # Sort the collected points by rank for proper plotting order
+    sorted_points = sorted(list(zip(ranks_to_plot, freqs_to_plot)))
+    
+    ranks, freqs_at_ranks = zip(*sorted_points) if sorted_points else ([], [])
+
+    for i in sorted_points[::-1][:25]:
+        print(i[0],"words have at least",i[1],"occurrences")
+    plt.figure(figsize=(10, 7))
+    plt.plot(freqs_at_ranks, ranks, marker='+', linestyle='-')
+    plt.title('Rank vs. Frequency Cutoff')
+    plt.ylabel('Rank (Number of words with at least this frequency)')
+    plt.xlabel('Minimum Frequency')
+    plt.xscale('log') # Use log scale for ranks as they can vary widely
+    plt.yscale('log') # Use log scale for frequencies as they can vary widely
+    plt.grid(True, which="both", ls="-", alpha=0.2)
+    plt.tight_layout()
+    # plt.show()
 
 def full_analysis(path):
     words, freqs = load_wordlist(path)
-    print_basic_stats(words, freqs)
-    plot_top_words(words, freqs)
-    plot_zipf(freqs)
-    plot_coverage_curve(freqs)
-    plot_word_length_distribution(words)
-    plot_frequency_histogram(freqs)
+    # print_basic_stats(words, freqs)
+    # plot_top_words(words, freqs)
+    # plot_zipf(freqs)
+    # plot_coverage_curve(freqs)
+    # plot_word_length_distribution(words)
+    # plot_frequency_histogram(freqs)
+    plot_frequency_cutoff_ranks(freqs) #kind of like a simplified Zipf plot
+    # plot_char_frequencies(words)
 
 full_analysis(OUTPUT_WORDLIST)
