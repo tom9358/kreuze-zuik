@@ -158,13 +158,14 @@ def tokenize(sentence: str) -> list[str]:
 
 def pass_check(word: str, count: int) -> bool: # seems to have a VERY good quality/complexity ratio
     if count < 1: return False
-    # Let's only permit alphanumeric characters:
+    # Only permit alphanumeric characters:
     if any(not char.isalpha() for char in word):
         return False
-    for char in 'åõüāēōšôûîâÅÕÜĀĒŌŠÔÛÎÂíéáúñçßÍÉÁÚÑÇẞ':
+    # Histogram of character frequencies + manual check shows that words with these characters can also be filtered out:
+    for char in 'åõüāēōšôûîâčäàíéáúñçãßðþøùÅÕÜĀĒŌŠÔÛÎÂČÄÀÍÉÁÚÑÇÃẞÐÞØÙɘÏɨὄőɟὅɛǖɔɑΐæłὃəīÿʊǂĵ':
         if char in word:
             return False
-    # Let's also filter out the most common other alphabets, i.e. Greek and Cyrillic:
+    # Also filter out the most common other alphabets, i.e. Greek and Cyrillic:
     for char in word:
         if char in 'αβγδεζηθικλμνξοπρστυφχψωабвгдежзийклмнопрстуфхцчшщъыьэюяΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ':
             return False
@@ -190,6 +191,7 @@ def postprocess(counter: Counter) -> Counter:
 
         tied_variants = [v for v, f in variants.items() if f == most_common_freq]
         best_variant = min((v for v in tied_variants if v.islower()), default=min(tied_variants))
+        if len(variants)>2: print(variants)
 
         result[best_variant] = total_freq
     return result
