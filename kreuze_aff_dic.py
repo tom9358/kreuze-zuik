@@ -1,6 +1,6 @@
 # Define the file paths
 
-input_file_path = 'kreuze-zuik\kreuze_freq_wordlist.txt' #D:\Kreuze-app\kreuze-zuik\kreuze_freq_wordlist.txt
+input_file_path = 'kreuze_freq_wordlist.txt' #D:\Kreuze-app\kreuze-zuik\kreuze_freq_wordlist.txt
 output_file_path = 'gos_NL.dic'
 
 # Initialize an empty list to hold the words
