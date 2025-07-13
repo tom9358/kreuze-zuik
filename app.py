@@ -30,7 +30,7 @@ with open("kreuze_freq_wordlist.txt", 'r', encoding='utf-8') as file:
         WORD_STATS.append({'word': word, 'freq': freq, 'log': log_f})
         _log_values.append(log_f)
 
-# normalize log‑frequencies -> 0 (= rare) ... 100 (= most frequent)
+# normalize log‑frequencies -> 0 (= rare) ... 100 (= most frequent)
 _min_log, _max_log = min(_log_values), max(_log_values)
 for d in WORD_STATS:
     d['norm'] = 100 * (d['log'] - _min_log) / (_max_log - _min_log)
