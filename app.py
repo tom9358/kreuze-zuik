@@ -18,12 +18,12 @@ WORD_FREQUENCIES = []
 WORD_STATS        = []
 _log_values       = []
 
-
-with open("kreuze_freq_wordlist.txt", 'r', encoding='utf-8') as file:
+WORDLIST_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kreuze_freq_wordlist.txt')
+with open(WORDLIST_PATH, 'r', encoding='utf-8') as file:
     for line in file:
         word, freq_str   = line.strip().split('\t')
         freq             = int(freq_str)
-        log_f            = math.log10(freq)              # log‑freq (basis 10)
+        log_f            = math.log10(freq)
         WORDLIST.append(word)
         WORD_FREQUENCIES.append((word,freq))
         WORDLIST.append(word)
