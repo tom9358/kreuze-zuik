@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ontdek willekeurege woorden</title>
+<style>
+    body { font-family: sans-serif; margin: 20px; }
+    .container { max-width: 800px; margin: auto; padding: 20px;
+                 border: 1px solid #ccc; border-radius: 8px; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    input[type="range"] { width: 100%; }
+
+    button {
+        padding: 10px 22px; background: #007bff; color: #fff;
+        border: none; border-radius: 5px; cursor: pointer;
+        transition: background .2s;
+    }
+    button:hover { background: #0056b3; }
+
+    #wordListContainer {
+        margin-top: 22px; padding: 15px; min-height: 100px;
+        border: 1px dashed #ddd; background: #fafafa; border-radius: 6px;
+    }
+    .word-item {
+        display: inline-block; margin: 5px; padding: 5px 10px;
+        background: #e9e9e9; border-radius: 3px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Random Word Sampler</h1>
+
+    <!-- Rarity‑centrum (0 = zeldzaam, 100 = frequent) -->
+    <div class="form-group">
+        <label for="centerSlider">
+            Zeldzoamhaid (<span id="centerVal">50</span> %)
+        </label>
+        <input type="range" id="centerSlider" min="0" max="100" value="50">
+    </div>
+
+    <!-- Bandbreedte / max deviation -->
+    <div class="form-group">
+        <label for="bandSlider">
+            Baandbredte zeldzoamhaid (<span id="bandVal">10</span> %)
+        </label>
+        <input type="range" id="bandSlider" min="1" max="100" value="10">
+    </div>
+
+    <!-- # samples -->
+    <div class="form-group">
+        <label for="sampleSlider">
+            Aantal veurbeelden: <span id="sampleVal">3</span>
+        </label>
+        <input type="range" id="sampleSlider" min="1" max="100" value="3">
+    </div>
+
+    <!-- lengte‑range -->
+    <div class="form-group">
+        <label>
+            Woordlengte: <span id="minLenVal">1</span>–<span id="maxLenVal">30</span>
+        </label>
+        <div style="display:flex; gap:10px;">
+            <input type="range" id="minLenSlider" min="1" max="30" value="1">
+            <input type="range" id="maxLenSlider" min="1" max="30" value="30">
+        </div>
+    </div>
+
+    <!-- checkbox: toon freq -->
+    <div class="form-group">
+        <label>
+            <input type="checkbox" id="showFreqCB" checked>
+            Frequenties teunen
+        </label>
+    </div>
+
+    <button id="sampleBtn">Zuiken!</button>
+
+    <h2>Resultaat:</h2>
+    <div id="wordListContainer">
+        <p>Klik op "Zuiken!" om resultoaten te zain.</p>
+    </div>
+</div>
+
+<script>
+/* refs */
+const cS = id => document.getElementById(id);
+const centerSlider = cS('centerSlider'), bandSlider   = cS('bandSlider'),
+      sampleSlider = cS('sampleSlider'), minLenSlider = cS('minLenSlider'),
+      maxLenSlider = cS('maxLenSlider'), showFreqCB   = cS('showFreqCB'),
+      centerVal = cS('centerVal'), bandVal   = cS('bandVal'),
+      sampleVal = cS('sampleVal'), minLenVal = cS('minLenVal'),
+      maxLenVal = cS('maxLenVal'), sampleBtn = cS('sampleBtn'),
+      wordList  = cS('wordListContainer');
+
+/* helpers */
+function syncVals() {
+    centerVal.textContent = centerSlider.value;
+    bandVal.textContent   = bandSlider.value;
+    sampleVal.textContent = sampleSlider.value;
+    minLenVal.textContent = minLenSlider.value;
+    maxLenVal.textContent = maxLenSlider.value;
+}
+
+/* beperkingen voor min/max‑lengte */
+minLenSlider.oninput = () => {
+    if (+minLenSlider.value > +maxLenSlider.value)
+        minLenSlider.value = maxLenSlider.value;
+    syncVals();
+};
+maxLenSlider.oninput = () => {
+    if (+maxLenSlider.value < +minLenSlider.value)
+        maxLenSlider.value = minLenSlider.value;
+    syncVals();
+};
+
+/* sliders updaten labels realtime */
+['input','change'].forEach(evt => {
+    [centerSlider,bandSlider,sampleSlider].forEach(sl =>
+        sl.addEventListener(evt, syncVals));
+});
+syncVals();
+
+/* fetch words */
+sampleBtn.onclick = async () => {
+    wordList.innerHTML = '<p>Bezig…</p>';
+    try {
+        const res = await fetch('/get_random_words', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                rarity_center: centerSlider.value,
+                bandwidth:    bandSlider.value,
+                num_samples:  sampleSlider.value,
+                minLength:    minLenSlider.value,
+                maxLength:    maxLenSlider.value,
+                showFreq:     showFreqCB.checked
+            })
+        });
+        const data = await res.json();
+
+        wordList.innerHTML = '';
+        if (data.words?.length) {
+            data.words.forEach(obj => {
+                const span = document.createElement('span');
+                span.className = 'word-item';
+                span.textContent = showFreqCB.checked
+                    ? `${obj.word}: ${obj.freq}`
+                    : obj.word;
+                wordList.appendChild(span);
+            });
+        } else {
+            wordList.innerHTML = '<p>Gain woorden vonden.</p>';
+        }
+    } catch (e) {
+        console.error(e);
+        wordList.innerHTML = '<p>Fout bie t ophoalen.</p>';
+    }
+};
+</script>
+</body>
+</html>

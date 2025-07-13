@@ -4,6 +4,8 @@ import re
 import json
 from collections import Counter, defaultdict
 from difflib import get_close_matches
+import random
+import math
 
 app = Flask(__name__)
 
@@ -11,8 +13,30 @@ JSON_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sentences_
 with open(JSON_FILE, 'r', encoding='utf-8') as file:
     AGGREGATED_DATA = json.load(file)
 
+WORDLIST = []
+WORD_FREQUENCIES = []
+WORD_STATS        = []
+_log_values       = []
+
+
 with open("kreuze_freq_wordlist.txt", 'r', encoding='utf-8') as file:
-    WORDLIST = [line.split('\t')[0] for line in file.readlines()]
+    for line in file:
+        word, freq_str   = line.strip().split('\t')
+        freq             = int(freq_str)
+        log_f            = math.log10(freq)              # log‑freq (basis 10)
+        WORDLIST.append(word)
+        WORD_FREQUENCIES.append((word,freq))
+        WORDLIST.append(word)
+        WORD_STATS.append({'word': word, 'freq': freq, 'log': log_f})
+        _log_values.append(log_f)
+
+# normalize log‑frequencies -> 0 (= rare) ... 100 (= most frequent)
+_min_log, _max_log = min(_log_values), max(_log_values)
+for d in WORD_STATS:
+    d['norm'] = 100 * (d['log'] - _min_log) / (_max_log - _min_log)
+
+# optional sorting, nice for debugging
+WORD_STATS.sort(key=lambda d: d['norm'])
 
 def find_example_sentences(search_pattern, max_example_lines):
     """
@@ -39,9 +63,44 @@ def find_example_sentences(search_pattern, max_example_lines):
 
     return results, document_match_counter
 
+def sample_random_words(center, bandwidth, num_samples, min_len, max_len):
+    """
+    Samples random words based on rarity, length, and number of samples.
+    """
+    lo = max(0, center - bandwidth / 2)
+    hi = min(100, center + bandwidth / 2)
+
+    pool = [
+        d for d in WORD_STATS
+        if lo <= d['norm'] <= hi and min_len <= len(d['word']) <= max_len
+    ]
+    if not pool:
+        return []
+
+    chosen = random.sample(pool, min(num_samples, len(pool)))
+    return [{'word': d['word'], 'freq': d['freq']} for d in chosen]
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/random_word')
+def random_word_page():
+    return render_template('random_word.html')
+
+@app.route('/get_random_words', methods=['POST'])
+def get_random_words():
+    data         = request.json
+    center       = float(data['rarity_center'])
+    bandwidth    = float(data['bandwidth'])
+    num_samples  = int(data['num_samples'])
+    min_length   = int(data['minLength'])
+    max_length   = int(data['maxLength'])
+    sampled      = sample_random_words(center, bandwidth,
+                                       num_samples, min_length, max_length)
+
+    return jsonify({'words': sampled})
 
 @app.route('/process', methods=['POST'])
 def process():
