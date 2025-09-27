@@ -26,7 +26,6 @@ with open(WORDLIST_PATH, 'r', encoding='utf-8') as file:
         log_f            = math.log10(freq)
         WORDLIST.append(word)
         WORD_FREQUENCIES.append((word,freq))
-        WORDLIST.append(word)
         WORD_STATS.append({'word': word, 'freq': freq, 'log': log_f})
         _log_values.append(log_f)
 
