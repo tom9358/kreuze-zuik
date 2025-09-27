@@ -118,7 +118,14 @@ def process():
     example_lines = {filename: data['lines'] for filename, data in examples.items()}
     match_counts = {doc: dict(counter.most_common()) for doc, counter in match_counts.items()}
 
-    return jsonify({'hits_per_file': hits_per_file, 'examples': example_lines, 'counts': match_counts})
+    total_hits = sum(hits_per_file.values())
+
+    return jsonify({
+        'hits_per_file': hits_per_file,
+        'examples': example_lines,
+        'counts': match_counts,
+        'total_hits': total_hits
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)

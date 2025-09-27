@@ -10,8 +10,8 @@
     <h1><a href="https://dideldom.nu/tiedschrift-kreuze/">Kreuze</a> veurbeeldzuiker</h1>
 
     <form id="search-form">
-        <label for="search_pattern">Zuikterm: (regex waarkt! biev. mit <i>stoet(jes)*</i> vindst stoet én stoetjes!</label>
-        <input type="text" id="search_pattern" name="search_pattern" value="stoet(jes)*" required>
+        <label for="search_pattern">Zuikterm: (kin mit regex! biev. mit <i>stoet(jes)?</i> vindst stoet én stoetjes!</label>
+        <input type="text" id="search_pattern" name="search_pattern" value="stoet(jes)?" required>
 
         <label for="max_lines">Max. aantal veurbeelden:</label>
         <input type="number" id="max_lines" name="max_lines" value="300">
@@ -59,7 +59,7 @@
                 // Section: Example Sentences with hits
                 const examplesDiv = document.createElement('div');
                 examplesDiv.classList.add('list');
-                examplesDiv.innerHTML = '<h3>Veurbeeldzinnen:</h3>';
+                examplesDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
                 for (let file in data.examples) {
                     const hitsCount = data.hits_per_file[file];
                     examplesDiv.innerHTML += `<h4>${file} (${hitsCount} zinnen)</h4>`;
