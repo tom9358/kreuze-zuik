@@ -61,12 +61,14 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
             const formCountsDiv = document.createElement('div');
             formCountsDiv.classList.add('list');
             formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
-            formCountsDiv.innerHTML = '<h3>Aantal per vörm:</h3>';
-            for (let form in data.form_counts) {
-                formCountsDiv.innerHTML += `<p>${form}: ${data.form_counts[form]}</p>`;
+            formCountsDiv.innerHTML += '<h4>Aantal per vörm:</h4>';
+            const sortedFormCounts = Object.entries(data.form_counts).sort((a, b) => b[1] - a[1]);
+
+            for (let [form, count] of sortedFormCounts) {
+                formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`;
             }
             resultDiv.appendChild(formCountsDiv);
-
+            
             // Section: Example Sentences with hits
             const examplesDiv = document.createElement('div');
             examplesDiv.classList.add('list');
