@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ontdek willekeurege woorden</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 <style>
     body { font-family: sans-serif; margin: 20px; }
     .container { max-width: 800px; margin: auto; padding: 20px;
-                 border: 1px solid #ccc; border-radius: 8px; }
+                 border: 1px solid var(--border); border-radius: 8px; 
+                 background-color: #fff; box-shadow: var(--shadow);}
 
     .form-group { margin-bottom: 18px; }
     label { display: block; margin-bottom: 6px; font-weight: 600; }
@@ -29,6 +31,7 @@
         background: #e9e9e9; border-radius: 3px;
     }
 </style>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="f10b8a14-bb17-4158-b6e6-b412457be588"></script>
 </head>
 <body>
 <div class="container">
@@ -84,6 +87,8 @@
         <p>Klik op "Zuiken!" om resultoaten te zain.</p>
     </div>
 </div>
+
+<h4><a href="/">Weerom noar t veurbeeldzuiken</a></h4>
 
 <script>
 /* refs */
