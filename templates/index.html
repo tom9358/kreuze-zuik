@@ -25,53 +25,62 @@
 <h4><a href="/random_word">Willekeurege woorden vinden</a></h4>
 
 <script>
-    document.getElementById('search-form').addEventListener('submit', function(e) {
-        e.preventDefault();
+document.getElementById('search-form').addEventListener('submit', function(e) {
+    e.preventDefault();
 
-        const formData = new FormData(this);
-        fetch('/process', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = ''; // Clear previous results
+    const formData = new FormData(this);
+    fetch('/process', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = ''; // Clear previous results
 
-            if (data.suggestions) {
-                if (data.suggestions.length > 0) {
-                    // Display suggestions
-                    const suggestionsDiv = document.createElement('div');
-                    suggestionsDiv.classList.add('list');
-                    suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
-                    data.suggestions.forEach(suggestion => {
-                        suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
-                    });
-                    resultDiv.appendChild(suggestionsDiv);
-                } else {
-                    // Display "niks vonden" when no suggestions are present
-                    const noSuggestionsDiv = document.createElement('div');
-                    noSuggestionsDiv.classList.add('list');
-                    noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
-                    resultDiv.appendChild(noSuggestionsDiv);
-                }
+        if (data.suggestions) {
+            if (data.suggestions.length > 0) {
+                // Display suggestions
+                const suggestionsDiv = document.createElement('div');
+                suggestionsDiv.classList.add('list');
+                suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
+                data.suggestions.forEach(suggestion => {
+                    suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
+                });
+                resultDiv.appendChild(suggestionsDiv);
             } else {
-                // Section: Example Sentences with hits
-                const examplesDiv = document.createElement('div');
-                examplesDiv.classList.add('list');
-                examplesDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
-                for (let file in data.examples) {
-                    const hitsCount = data.hits_per_file[file];
-                    examplesDiv.innerHTML += `<h4>${file} (${hitsCount} zinnen)</h4>`;
-                    data.examples[file].forEach(line => {
-                        examplesDiv.innerHTML += `<p>${line}</p>`;
-                    });
-                }
-                resultDiv.appendChild(examplesDiv);
+                // Display "niks vonden" when no suggestions are present
+                const noSuggestionsDiv = document.createElement('div');
+                noSuggestionsDiv.classList.add('list');
+                noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
+                resultDiv.appendChild(noSuggestionsDiv);
             }
-        })
-        .catch(error => console.error('Error:', error));
-    });
+        } else {
+            // Section: Form Counts
+            const formCountsDiv = document.createElement('div');
+            formCountsDiv.classList.add('list');
+            formCountsDiv.innerHTML = '<h3>Form Counts</h3>';
+            for (let form in data.form_counts) {
+                formCountsDiv.innerHTML += `<p>${form}: ${data.form_counts[form]}</p>`;
+            }
+            resultDiv.appendChild(formCountsDiv);
+
+            // Section: Example Sentences with hits
+            const examplesDiv = document.createElement('div');
+            examplesDiv.classList.add('list');
+            examplesDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
+            for (let file in data.examples) {
+                const hitsCount = data.hits_per_file[file];
+                examplesDiv.innerHTML += `<h4>${file} (${hitsCount} zinnen)</h4>`;
+                data.examples[file].forEach(line => {
+                    examplesDiv.innerHTML += `<p>${line}</p>`;
+                });
+            }
+            resultDiv.appendChild(examplesDiv);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
 </script>
 
 </body>

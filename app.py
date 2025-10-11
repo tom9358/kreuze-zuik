@@ -56,11 +56,16 @@ def find_example_sentences(search_pattern, max_example_lines):
                 results[filename]["lines"].append(sentence)
                 results[filename]["count"] += 1
                 total_sentences_processed += 1
-            matches = word_pattern.findall(sentence)
+            matches = [m.group(0) for m in word_pattern.finditer(sentence)]
             if matches:
                 document_match_counter[filename].update(matches)
 
-    return results, document_match_counter
+    # Count occurrences of each form of the search pattern
+    form_counts = Counter()
+    for filename, counter in document_match_counter.items():
+        form_counts.update(counter)
+
+    return results, document_match_counter, form_counts
 
 def sample_random_words(center, bandwidth, num_samples, min_len, max_len):
     """
@@ -106,7 +111,7 @@ def process():
     search_pattern = request.form['search_pattern']
     max_lines = int(request.form['max_lines'])
 
-    examples, match_counts = find_example_sentences(search_pattern, max_lines)
+    examples, match_counts, form_counts = find_example_sentences(search_pattern, max_lines)
 
     if not any(examples.values()):
         # No matches found; suggest closest words
@@ -124,6 +129,7 @@ def process():
         'hits_per_file': hits_per_file,
         'examples': example_lines,
         'counts': match_counts,
+        'form_counts': dict(form_counts),
         'total_hits': total_hits
     })
 
