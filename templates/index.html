@@ -60,7 +60,8 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
             // Section: Form Counts
             const formCountsDiv = document.createElement('div');
             formCountsDiv.classList.add('list');
-            formCountsDiv.innerHTML = '<h3>Form Counts</h3>';
+            formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
+            formCountsDiv.innerHTML = '<h3>Aantal per vörm:</h3>';
             for (let form in data.form_counts) {
                 formCountsDiv.innerHTML += `<p>${form}: ${data.form_counts[form]}</p>`;
             }
@@ -69,10 +70,9 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
             // Section: Example Sentences with hits
             const examplesDiv = document.createElement('div');
             examplesDiv.classList.add('list');
-            examplesDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
             for (let file in data.examples) {
                 const hitsCount = data.hits_per_file[file];
-                examplesDiv.innerHTML += `<h4>${file} (${hitsCount} zinnen)</h4>`;
+                examplesDiv.innerHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
                 data.examples[file].forEach(line => {
                     examplesDiv.innerHTML += `<p>${line}</p>`;
                 });
