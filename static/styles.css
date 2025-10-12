@@ -34,10 +34,12 @@ h1 a {
 }
 h1 a:hover {
   text-decoration: underline;
+  color: #056622;
 }
 
 /* Search Form */
 form {
+  text-align: left;
   max-width: 600px;
   margin: 0 auto 1.5rem;
   display: grid;
@@ -131,13 +133,22 @@ hr {
   border: none;
   border-top: 1px solid var(--border);
 }
-h4 a {
+p a {
   color: var(--primary);
   text-decoration: none;
 }
-h4 a:hover {
+p a:hover {
+  color: var(--primary-dark);
   text-decoration: underline;
 }
 h4 {
-    margin-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  margin-top: 1.5rem;
+}
+footer {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto;
 }
