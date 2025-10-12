@@ -70,7 +70,7 @@ def find_example_sentences(search_pattern, max_example_lines):
 
             doc_counter.update(matches)
             form_counts.update(matches)
-
+    results = {k: v for k, v in results.items() if v["count"] > 0}
     return results, document_match_counter, form_counts
 
 def sample_random_words(center, bandwidth, num_samples, min_len, max_len):
