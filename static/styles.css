@@ -152,3 +152,15 @@ footer {
   max-width: 600px;
   margin: 0 auto;
 }
+/* Loading indicators */
+.loading-indicator {
+    display: none;
+    color: var(--primary);
+    font-style: italic;
+    font-size: 1.1em;       /* slightly larger */
+    margin: 1em 0;          /* spacing */
+    text-align: center;      /* center it above results */
+}
+button.loading {
+    background-color: var(--primary-dark);
+}

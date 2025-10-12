@@ -19,6 +19,8 @@
 
         <button type="submit">Zuiken!</button>
     </form>
+    <div id="loading" class="loading-indicator">Op zuik... Eem wachten...</div>
+
 
     <div class="result" id="result"></div>
 
@@ -29,8 +31,16 @@
     <p><a href="/random_word">Willekeurege woorden vinden</a></p>
 </footer>
 <script>
+const submitButton = document.querySelector('#search-form button');
 document.getElementById('search-form').addEventListener('submit', function(e) {
     e.preventDefault();
+
+    const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
+
+    loadingDiv.style.display = 'block';
+    resultDiv.innerHTML = '';
+    submitButton.classList.add('loading');
 
     const formData = new FormData(this);
     fetch('/process', {
@@ -39,8 +49,8 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(data => {
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = ''; // Clear previous results
+        loadingDiv.style.display = 'none';
+        submitButton.classList.remove('loading');
 
         if (data.suggestions) {
             if (data.suggestions.length > 0) {
@@ -71,7 +81,7 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
                 formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`;
             }
             resultDiv.appendChild(formCountsDiv);
-            
+
             // Section: Example Sentences with hits
             const examplesDiv = document.createElement('div');
             examplesDiv.classList.add('list');
@@ -85,7 +95,11 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
             resultDiv.appendChild(examplesDiv);
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        submitButton.classList.remove('loading');
+        console.error('Error:', error);
+    });
 });
 </script>
 </body>
