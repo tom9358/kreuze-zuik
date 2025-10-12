@@ -31,8 +31,10 @@ with open(WORDLIST_PATH, 'r', encoding='utf-8') as file:
 
 # normalize log‑frequencies -> 0 (= rare) ... 100 (= most frequent)
 _min_log, _max_log = min(_log_values), max(_log_values)
+scale = 100 / (_max_log - _min_log)
+
 for d in WORD_STATS:
-    d['norm'] = 100 * (d['log'] - _min_log) / (_max_log - _min_log)
+    d['norm'] = (d['log'] - _min_log) * scale
 
 # optional sorting, nice for debugging
 WORD_STATS.sort(key=lambda d: d['norm'])
@@ -46,17 +48,19 @@ def find_example_sentences(search_pattern, max_example_lines):
     document_match_counter = defaultdict(Counter)
 
     total_sentences_processed = 0
+    re_search = word_pattern.search
+    re_finditer = word_pattern.finditer
 
     for filename, sentences in AGGREGATED_DATA.items():
         for sentence in sentences:
             if total_sentences_processed >= max_example_lines:
                 break
 
-            if word_pattern.search(sentence):
+            if re_search(sentence):
                 results[filename]["lines"].append(sentence)
                 results[filename]["count"] += 1
                 total_sentences_processed += 1
-            matches = [m.group(0) for m in word_pattern.finditer(sentence)]
+            matches = [m.group(0) for m in re_finditer(sentence)]
             if matches:
                 document_match_counter[filename].update(matches)
 
