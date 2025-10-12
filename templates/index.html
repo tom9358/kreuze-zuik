@@ -85,13 +85,17 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
             // Section: Example Sentences with hits
             const examplesDiv = document.createElement('div');
             examplesDiv.classList.add('list');
+            let examplesHTML = '';
+
             for (let file in data.examples) {
                 const hitsCount = data.hits_per_file[file];
-                examplesDiv.innerHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
+                examplesHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
                 data.examples[file].forEach(line => {
-                    examplesDiv.innerHTML += `<p>${line}</p>`;
+                    examplesHTML += `<p>${line}</p>`;
                 });
             }
+
+            examplesDiv.innerHTML = examplesHTML;
             resultDiv.appendChild(examplesDiv);
         }
     })
