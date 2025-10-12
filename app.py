@@ -48,26 +48,28 @@ def find_example_sentences(search_pattern, max_example_lines):
     document_match_counter = defaultdict(Counter)
 
     total_sentences_processed = 0
-    re_search = word_pattern.search
     re_finditer = word_pattern.finditer
+    form_counts = Counter()
 
     for filename, sentences in AGGREGATED_DATA.items():
+        doc_counter = document_match_counter[filename]
+        res_entry = results[filename]
         for sentence in sentences:
             if total_sentences_processed >= max_example_lines:
                 break
 
-            if re_search(sentence):
-                results[filename]["lines"].append(sentence)
-                results[filename]["count"] += 1
-                total_sentences_processed += 1
-            matches = [m.group(0) for m in re_finditer(sentence)]
-            if matches:
-                document_match_counter[filename].update(matches)
+            iters = re_finditer(sentence)
+            first_match = next(iters, None)
+            if first_match is None:
+                continue
+            matches = [first_match[0]] + [m[0] for m in iters]
 
-    # Count occurrences of each form of the search pattern
-    form_counts = Counter()
-    for filename, counter in document_match_counter.items():
-        form_counts.update(counter)
+            res_entry["lines"].append(sentence)
+            res_entry["count"] += 1
+            total_sentences_processed += 1
+
+            doc_counter.update(matches)
+            form_counts.update(matches)
 
     return results, document_match_counter, form_counts
 
@@ -138,4 +140,4 @@ def process():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
