@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kreuze veurbeeldzuiker</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-        <script defer src="https://cloud.umami.is/script.js" data-website-id="f10b8a14-bb17-4158-b6e6-b412457be588"></script>
-    </head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreuze veurbeeldzuiker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="f10b8a14-bb17-4158-b6e6-b412457be588"></script>
+</head>
+
 <body>
     <h1><a href="https://dideldom.nu/tiedschrift-kreuze/">Kreuze</a> veurbeeldzuiker</h1>
 
     <form id="search-form">
-        <label for="search_pattern">Zuikterm: (kin mit regex! biev. mit <i>stoet(jes)?</i> vindst stoet én stoetjes!</label>
+        <label for="search_pattern">Zuikterm: (kin mit regex! biev. mit <i>stoet(jes)?</i> vindst stoet én
+            stoetjes!</label>
         <input type="text" id="search_pattern" name="search_pattern" value="stoet(jes)?" required autofocus>
 
         <label for="max_lines">Max. aantal veurbeelden:</label>
@@ -24,87 +28,89 @@
 
     <div class="result" id="result"></div>
 
-<hr>
-<footer>
-    <p>Deur <a href="https://www.linkedin.com/in/tom-brand-053898182/">Tom Brand</a> - 
-    Code is haildaal open-source en beschikboar op <a href="https://github.com/tom9358/kreuze-zuik">GitHub</a>.</p>
-    <p><a href="/random_word">Willekeurege woorden vinden</a></p>
-</footer>
-<script>
-const submitButton = document.querySelector('#search-form button');
-document.getElementById('search-form').addEventListener('submit', function(e) {
-    e.preventDefault();
+    <hr>
+    <footer>
+        <p>Deur <a href="https://www.linkedin.com/in/tom-brand-053898182/">Tom Brand</a> -
+            Code is haildaal open-source en beschikboar op <a href="https://github.com/tom9358/kreuze-zuik">GitHub</a>.
+        </p>
+        <p><a href="/random_word">Willekeurege woorden vinden</a></p>
+    </footer>
+    <script>
+        const submitButton = document.querySelector('#search-form button');
+        document.getElementById('search-form').addEventListener('submit', function (e) {
+            e.preventDefault();
 
-    const resultDiv = document.getElementById('result');
-    const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const loadingDiv = document.getElementById('loading');
 
-    loadingDiv.style.display = 'block';
-    resultDiv.innerHTML = '';
-    submitButton.classList.add('loading');
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            submitButton.classList.add('loading');
 
-    const formData = new FormData(this);
-    fetch('/process', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        loadingDiv.style.display = 'none';
-        submitButton.classList.remove('loading');
+            const formData = new FormData(this);
+            fetch('/process', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    loadingDiv.style.display = 'none';
+                    submitButton.classList.remove('loading');
 
-        if (data.suggestions) {
-            if (data.suggestions.length > 0) {
-                // Display suggestions
-                const suggestionsDiv = document.createElement('div');
-                suggestionsDiv.classList.add('list');
-                suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
-                data.suggestions.forEach(suggestion => {
-                    suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
+                    if (data.suggestions) {
+                        if (data.suggestions.length > 0) {
+                            // Display suggestions
+                            const suggestionsDiv = document.createElement('div');
+                            suggestionsDiv.classList.add('list');
+                            suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
+                            data.suggestions.forEach(suggestion => {
+                                suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
+                            });
+                            resultDiv.appendChild(suggestionsDiv);
+                        } else {
+                            // Display "niks vonden" when no suggestions are present
+                            const noSuggestionsDiv = document.createElement('div');
+                            noSuggestionsDiv.classList.add('list');
+                            noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
+                            resultDiv.appendChild(noSuggestionsDiv);
+                        }
+                    } else {
+                        // Section: Form Counts
+                        const formCountsDiv = document.createElement('div');
+                        formCountsDiv.classList.add('list');
+                        formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
+                        formCountsDiv.innerHTML += '<h4>Aantal per vörm:</h4>';
+                        const sortedFormCounts = Object.entries(data.form_counts).sort((a, b) => b[1] - a[1]);
+
+                        for (let [form, count] of sortedFormCounts) {
+                            formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`;
+                        }
+                        resultDiv.appendChild(formCountsDiv);
+
+                        // Section: Example Sentences with hits
+                        const examplesDiv = document.createElement('div');
+                        examplesDiv.classList.add('list');
+                        let examplesHTML = '';
+
+                        Object.keys(data.examples).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(file => {
+                            const hitsCount = data.hits_per_file[file];
+                            examplesHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
+                            data.examples[file].forEach(line => {
+                                examplesHTML += `<p>${line}</p>`;
+                            });
+                        });
+
+                        examplesDiv.innerHTML = examplesHTML;
+                        resultDiv.appendChild(examplesDiv);
+                    }
+                })
+                .catch(error => {
+                    loadingDiv.style.display = 'none';
+                    submitButton.classList.remove('loading');
+                    console.error('Error:', error);
                 });
-                resultDiv.appendChild(suggestionsDiv);
-            } else {
-                // Display "niks vonden" when no suggestions are present
-                const noSuggestionsDiv = document.createElement('div');
-                noSuggestionsDiv.classList.add('list');
-                noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
-                resultDiv.appendChild(noSuggestionsDiv);
-            }
-        } else {
-            // Section: Form Counts
-            const formCountsDiv = document.createElement('div');
-            formCountsDiv.classList.add('list');
-            formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
-            formCountsDiv.innerHTML += '<h4>Aantal per vörm:</h4>';
-            const sortedFormCounts = Object.entries(data.form_counts).sort((a, b) => b[1] - a[1]);
-
-            for (let [form, count] of sortedFormCounts) {
-                formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`;
-            }
-            resultDiv.appendChild(formCountsDiv);
-
-            // Section: Example Sentences with hits
-            const examplesDiv = document.createElement('div');
-            examplesDiv.classList.add('list');
-            let examplesHTML = '';
-
-            for (let file in data.examples) {
-                const hitsCount = data.hits_per_file[file];
-                examplesHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
-                data.examples[file].forEach(line => {
-                    examplesHTML += `<p>${line}</p>`;
-                });
-            }
-
-            examplesDiv.innerHTML = examplesHTML;
-            resultDiv.appendChild(examplesDiv);
-        }
-    })
-    .catch(error => {
-        loadingDiv.style.display = 'none';
-        submitButton.classList.remove('loading');
-        console.error('Error:', error);
-    });
-});
-</script>
+        });
+    </script>
 </body>
+
 </html>
