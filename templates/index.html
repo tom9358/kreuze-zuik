@@ -171,9 +171,11 @@
                     formCountsDiv.classList.add('list');
                     formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3><h4>Aantal per vörm:</h4>`;
                     const sorted = Object.entries(data.form_counts).sort((a,b) => b[1]-a[1]);
-                    sorted.forEach(([form,count]) => formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`);
-                    resultDiv.appendChild(formCountsDiv);
-                                        const examplesDiv = document.createElement('div');
+                    sorted.forEach(([form,count]) => {
+                        const url = `https://woordwaark.nl/woordenboek?query=${encodeURIComponent(form)}&language_ids[]=2&dictionary_ids[]=4&dictionary_ids[]=8&exact=false`;
+                        formCountsDiv.innerHTML += `<p><a href="${url}" target="_blank" rel="noopener noreferrer">${form}</a>: ${count}</p>`;
+                    });                    resultDiv.appendChild(formCountsDiv);
+                    const examplesDiv = document.createElement('div');
                     examplesDiv.classList.add('list');
                     examplesDiv.innerHTML = Object.entries(data.examples)
                         .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
