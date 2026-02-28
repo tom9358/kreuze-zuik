@@ -39,7 +39,7 @@ for d in WORD_STATS:
 # optional sorting, nice for debugging
 WORD_STATS.sort(key=lambda d: d['norm'])
 
-def find_example_sentences(search_pattern, max_example_lines):
+def find_example_sentences(search_pattern: str, max_example_lines: int):
     """
     Find example sentences and count matches.
     """
@@ -73,7 +73,7 @@ def find_example_sentences(search_pattern, max_example_lines):
     results = {k: v for k, v in results.items() if v["count"] > 0}
     return results, document_match_counter, form_counts
 
-def sample_random_words(center, bandwidth, num_samples, min_len, max_len):
+def sample_random_words(center, bandwidth, num_samples: int, min_len: int, max_len: int):
     """
     Samples random words based on rarity, length, and number of samples.
     """
