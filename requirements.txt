@@ -1,6 +1,1 @@
 flask
-numpy
-matplotlib
-seaborn
-pdfminer.six
-tokenizers

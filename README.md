@@ -9,12 +9,12 @@ De tool ondersteunt regex en heeft suggesties voor vergelijkbare woorden, indien
 
 Dit is een vrijetijdsproject, en ik kan niet garanderen dat de tool in de lucht blijft. Veel plezier ermee!
 
-**Links**
+## Relevante links
 
 * Het tijdschrift Kreuze online: [https://dideldom.nu/tiedschrift-kreuze/](https://dideldom.nu/tiedschrift-kreuze/)
 * Live versie van deze tool: [https://tom9358.pythonanywhere.com/](https://tom9358.pythonanywhere.com/)
 
-**Installatie**
+## Installatie
 
 De backend is geschreven in Python met Flask. Om lokaal te draaien:
 
@@ -34,13 +34,15 @@ The tool supports regex searches and can suggest similar words if your search te
 
 I work on this only in my free time, so I cannot guarantee that the tool will always be online. Enjoy!
 
-**Links**
-- Kreuze magazine online: https://dideldom.nu/tiedschrift-kreuze/
-- Live version of this tool: https://tom9358.pythonanywhere.com/
+## Relevant links
 
-**Installation**
+* Kreuze magazine online: [https://dideldom.nu/tiedschrift-kreuze/](https://dideldom.nu/tiedschrift-kreuze/)
+* Live version of this tool: [https://tom9358.pythonanywhere.com/](https://tom9358.pythonanywhere.com/)
+
+## Installation
 
 The backend is written in Python using Flask. To run locally:
+
 ```bash
 pip install -r requirements.txt
 python app.py

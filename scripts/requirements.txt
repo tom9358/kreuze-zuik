@@ -1,0 +1,6 @@
+# Contains the requirements needed to be able to run the scripts in the /scripts folder.
+numpy
+matplotlib
+seaborn
+pdfminer.six
+tokenizers
