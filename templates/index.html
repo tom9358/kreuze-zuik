@@ -1,116 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kreuze veurbeeldzuiker</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script defer src="https://cloud.umami.is/script.js"
-        data-website-id="f10b8a14-bb17-4158-b6e6-b412457be588"></script>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="f10b8a14-bb17-4158-b6e6-b412457be588"></script>
 </head>
-
 <body>
     <h1><a href="https://dideldom.nu/tiedschrift-kreuze/">Kreuze</a> veurbeeldzuiker</h1>
-
     <form id="search-form">
-        <label for="search_pattern">Zuikterm: (kin mit regex! biev. mit <i>stoet(jes)?</i> vindst stoet én
-            stoetjes!</label>
-        <input type="text" id="search_pattern" name="search_pattern" value="stoet(jes)?" required autofocus>
-
+        <label for="search_pattern">Zuikterm:</label>
+        <p class="hint">Typ dien tekst!</p>
+        <div class="input-group">
+            <input
+            type="text"
+            id="wordInput"
+            name="search_pattern"
+            placeholder="b.v. stoet"
+            required
+            autofocus
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+        />
+            <button type="button" id="addWildcard" title="Add wildcard">\w+</button>
+                </div>
         <label for="max_lines">Max. aantal veurbeelden:</label>
-        <input type="number" id="max_lines" name="max_lines" value="300">
-
-        <button type="submit">Zuiken!</button>
+        <input type="number" id="max_lines" name="max_lines" value="400">
+        <button type="submit" class="submit-button">Zuiken!</button>
+        <!-- Toggle for advanced tools -->
+        <details id="advanced-tools">
+            <summary>🔍 Geavanceerd zuiken</summary>
+            <div class="advanced-section">
+                <p class="hint">
+                    Baauw n petroon om woorden of spellingsvarioatsie te vergelieken.<br>
+                    Tik twijmoal op n blokje om t optioneel te moaken (<code>?</code>)<br>
+                    Perbaaier mor ais uut om <code>stoet(jes)?</code> te moaken, en kiek wast vinst! 🤓<br>
+                </p>
+                <div class="control-buttons">
+                    <button id="groupBtn" type="button">Groep</button>
+                    <button id="orBtn" type="button">Of</button>
+                    <button id="resetBtn" type="button">Reset</button>
+            </div>
+                <div class="block-container" id="blocks"></div>
+                <p>Veur de super-experts: regex waarkt ook!</p>
+                <div class="regex-preview" id="regexPreview">—</div>
+            </div>
+        </details>
     </form>
     <div id="loading" class="loading-indicator">Op zuik... Eem wachten...</div>
-
-
     <div class="result" id="result"></div>
-
     <hr>
     <footer>
-        <p>Deur <a href="https://www.linkedin.com/in/tom-brand-053898182/">Tom Brand</a> -
-            Code is haildaal open-source en beschikboar op <a href="https://github.com/tom9358/kreuze-zuik">GitHub</a>.
-        </p>
+        <p>Deur <a href="https://www.linkedin.com/in/tom-brand-053898182/">Tom Brand</a> —
+        Code is haildaal open-source en beschikboar op
+        <a href="https://github.com/tom9358/kreuze-zuik">GitHub</a>.</p>
         <p><a href="/random_word">Willekeurege woorden vinden</a></p>
     </footer>
     <script>
-        const submitButton = document.querySelector('#search-form button');
-        document.getElementById('search-form').addEventListener('submit', function (e) {
+        // --- Regex builder logic ---
+        const wordInput = document.getElementById('wordInput');
+        const blocksDiv = document.getElementById('blocks');
+        const regexPreview = document.getElementById('regexPreview');
+        const groupBtn = document.getElementById('groupBtn');
+        const orBtn = document.getElementById('orBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const addWildcardBtn = document.getElementById('addWildcard');
+        let blocks = [];
+        function renderBlocks() {
+            blocksDiv.innerHTML = '';
+            blocks.forEach((b, i) => {
+                const el = document.createElement('div');
+                el.className = 'letter-block';
+                if (b.optional) el.classList.add('optional');
+                if (b.selected) el.classList.add('selected');
+                el.textContent = b.text;
+                el.style.fontFamily = 'monospace';
+                el.addEventListener('click', () => {
+                    if (b.selected) {
+                        b.optional = !b.optional;
+                        b.selected = false;
+                    } else {
+                        b.selected = true;
+                    }
+                    renderBlocks();
+                });
+                blocksDiv.appendChild(el);
+            });
+            updateRegex();
+        }
+        function updateRegex() {
+            const regexParts = blocks.map(b => {
+                let part = b.text;
+                if (b.optional) part += '?';
+                return part;
+            });
+            const regex = regexParts.join('') || '—';
+            regexPreview.textContent = regex;
+            wordInput.value = regex === '—' ? '' : regex;
+        }
+        function groupSelected() {
+            const selectedIndices = blocks.map((b, i) => (b.selected ? i : -1)).filter(i => i !== -1);
+            if (selectedIndices.length < 2) return;
+            const start = selectedIndices[0];
+            const end = selectedIndices[selectedIndices.length - 1];
+            const groupText = blocks.slice(start, end + 1).map(b => b.text + (b.optional ? '?' : '')).join('');
+            blocks.splice(start, end - start + 1, { text: '(' + groupText + ')', optional: false, selected: false });
+            renderBlocks();
+        }
+        function orAdjacent() {
+            const selectedIndices = blocks.map((b, i) => (b.selected ? i : -1)).filter(i => i !== -1);
+            if (selectedIndices.length < 2) return;
+            for (let i = 1; i < selectedIndices.length; i++) {
+                if (selectedIndices[i] !== selectedIndices[i - 1] + 1) return;
+            }
+            const start = selectedIndices[0];
+            const end = selectedIndices[selectedIndices.length - 1];
+            const groupText = blocks.slice(start, end + 1).map(b => b.text).join('|');
+            blocks.splice(start, end - start + 1, { text: '(' + groupText + ')', optional: false, selected: false });
+            renderBlocks();
+        }
+        function resetBlocks() {
+            const flatText = blocks.map(b => b.text.replace(/[()|]/g, '')).join('');
+            blocks = [...flatText].map(ch => ({ text: ch, optional: false, selected: false }));
+            renderBlocks();
+        }
+        function addWildcard() {
+            wordInput.value += '\\w+';
+            blocks = [...wordInput.value].map(ch => ({ text: ch, optional: false, selected: false }));
+            renderBlocks();
+            wordInput.focus();
+        }
+        wordInput.addEventListener('input', () => {
+            const text = wordInput.value;
+            blocks = [...text].map(ch => ({ text: ch, optional: false, selected: false }));
+            renderBlocks();
+        });
+        addWildcardBtn.addEventListener('click', addWildcard);
+        groupBtn.addEventListener('click', groupSelected);
+        orBtn.addEventListener('click', orAdjacent);
+        resetBtn.addEventListener('click', resetBlocks);
+        // --- Search form logic ---
+        const submitButton = document.querySelector('#search-form button[type="submit"]');
+        document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
-
             const resultDiv = document.getElementById('result');
             const loadingDiv = document.getElementById('loading');
-
             loadingDiv.style.display = 'block';
             resultDiv.innerHTML = '';
-            submitButton.classList.add('loading');
-
+            submitButton.classList.add('loading');            
             const formData = new FormData(this);
-            fetch('/process', {
-                method: 'POST',
-                body: formData
-            })
+            fetch('/process', { method: 'POST', body: formData })
                 .then(response => response.json())
                 .then(data => {
                     loadingDiv.style.display = 'none';
                     submitButton.classList.remove('loading');
-
+                    resultDiv.innerHTML = '';
                     if (data.suggestions) {
-                        if (data.suggestions.length > 0) {
-                            // Display suggestions
-                            const suggestionsDiv = document.createElement('div');
-                            suggestionsDiv.classList.add('list');
-                            suggestionsDiv.innerHTML = '<h3>Niks vonden.. bedoulst doe:</h3>';
-                            data.suggestions.forEach(suggestion => {
-                                suggestionsDiv.innerHTML += `<p>${suggestion}</p>`;
-                            });
-                            resultDiv.appendChild(suggestionsDiv);
-                        } else {
-                            // Display "niks vonden" when no suggestions are present
-                            const noSuggestionsDiv = document.createElement('div');
-                            noSuggestionsDiv.classList.add('list');
-                            noSuggestionsDiv.innerHTML = '<h3>Niks vonden!</h3>';
-                            resultDiv.appendChild(noSuggestionsDiv);
-                        }
-                    } else {
-                        // Section: Form Counts
-                        const formCountsDiv = document.createElement('div');
-                        formCountsDiv.classList.add('list');
-                        formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3>`;
-                        formCountsDiv.innerHTML += '<h4>Aantal per vörm:</h4>';
-                        const sortedFormCounts = Object.entries(data.form_counts).sort((a, b) => b[1] - a[1]);
-
-                        for (let [form, count] of sortedFormCounts) {
-                            formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`;
-                        }
-                        resultDiv.appendChild(formCountsDiv);
-
-                        // Section: Example Sentences with hits
-                        const examplesDiv = document.createElement('div');
-                        examplesDiv.classList.add('list');
-                        let examplesHTML = '';
-
-                        Object.keys(data.examples).sort((a, b) => a.localeCompare(b, undefined, { numeric: true })).forEach(file => {
-                            const hitsCount = data.hits_per_file[file];
-                            examplesHTML += `<h4>${file} (${hitsCount} ${hitsCount === 1 ? 'zin' : 'zinnen'})</h4>`;
-                            data.examples[file].forEach(line => {
-                                examplesHTML += `<p>${line}</p>`;
-                            });
-                        });
-
-                        examplesDiv.innerHTML = examplesHTML;
-                        resultDiv.appendChild(examplesDiv);
+                        const list = document.createElement('div');
+                        list.classList.add('list');
+                        list.innerHTML = data.suggestions.length
+                            ? '<h3>Niks vonden... bedoulst doe:</h3>' + data.suggestions.map(s => `<p>${s}</p>`).join('')
+                            : '<h3>Niks vonden!</h3>';
+                        resultDiv.appendChild(list);
+                        return;
                     }
+                    const formCountsDiv = document.createElement('div');
+                    formCountsDiv.classList.add('list');
+                    formCountsDiv.innerHTML = `<h3>Veurbeeldzinnen vonden: ${data.total_hits}</h3><h4>Aantal per vörm:</h4>`;
+                    const sorted = Object.entries(data.form_counts).sort((a,b) => b[1]-a[1]);
+                    sorted.forEach(([form,count]) => formCountsDiv.innerHTML += `<p>${form}: ${count}</p>`);
+                    resultDiv.appendChild(formCountsDiv);
+                                        const examplesDiv = document.createElement('div');
+                    examplesDiv.classList.add('list');
+                    examplesDiv.innerHTML = Object.entries(data.examples)
+                        .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+                        .map(([file, lines]) => {
+                            const count = data.hits_per_file[file];
+                            const label = count === 1 ? 'zin' : 'zinnen';
+                            return `<h4>${file} (${count} ${label})</h4>${lines.map(l => `<p>${l}</p>`).join('')}`;
+                        })
+                        .join('');
+                    resultDiv.appendChild(examplesDiv);
                 })
-                .catch(error => {
+                .catch(err => {
                     loadingDiv.style.display = 'none';
                     submitButton.classList.remove('loading');
-                    console.error('Error:', error);
+                    console.error('Error:', err);
                 });
         });
     </script>
 </body>
-
 </html>

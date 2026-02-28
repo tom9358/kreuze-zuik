@@ -1,9 +1,9 @@
-/* General Styling */
+/* Base Theme */
 :root {
   --primary: #007bff;
   --primary-dark: #0056b3;
   --bg: #f4f7f6;
-  --card-bg: #ffffff;
+  --card-bg: #fff;
   --border: #e5e7eb;
   --radius: 0.75rem;
   --shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -28,7 +28,6 @@ h1 {
   margin-bottom: 1.5rem;
 }
 h1 a {
-  /* color: var(--primary); */
   color: #078930;
   text-decoration: none;
 }
@@ -39,11 +38,10 @@ h1 a:hover {
 
 /* Search Form */
 form {
-  text-align: left;
-  max-width: 600px;
-  margin: 0 auto 1.5rem;
   display: grid;
   gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
   padding: 1.5rem;
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -62,11 +60,24 @@ input[type="number"] {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 1rem;
-  transition: border 0.2s;
+  transition: border-color 0.2s;
 }
 input:focus {
   border-color: var(--primary);
   outline: none;
+}
+
+.input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+.input-group input {
+  flex: 1;
+}
+#addWildcard {
+  padding: 0.5rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 button {
@@ -82,6 +93,69 @@ button {
 }
 button:hover {
   background: var(--primary-dark);
+}
+
+button.loading {
+  background-color: var(--primary-dark);
+}
+
+.submit-button {
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+}
+
+/* === Regex Builder === */
+.block-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.letter-block {
+  font-family: monospace;
+  font-size: 1.1rem;
+  min-width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.4rem;
+  background: #e5e7eb;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  user-select: none;
+  white-space: nowrap;
+}
+.letter-block:active {
+  transform: scale(0.95);
+}
+.letter-block.optional {
+  background: #ffe08a;
+}
+.letter-block.selected {
+  background: #a5f3fc;
+  outline: 2px solid #0ea5e9;
+}
+
+.regex-preview {
+  font-family: monospace;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  word-break: break-all;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+.control-buttons button {
+  flex: 1;
 }
 
 /* Results Section */
@@ -101,50 +175,38 @@ button:hover {
   max-height: 350px;
   overflow-y: auto;
 }
-
 .list h3 {
   margin-top: 0;
   color: var(--primary);
   font-size: 1.1rem;
 }
-
 .list h4 {
-  margin-top: 1rem;
+  margin: 1rem 0 0.5rem;
   font-size: 1rem;
   color: #333;
 }
-
 .list p {
   font-size: 0.95rem;
   margin: 0.3rem 0;
 }
 
-/* Error Styling */
-.error-message {
-  color: #dc2626;
-  font-weight: 600;
-  margin-top: 0.5rem;
+/* Misc */
+.loading-indicator {
+  display: none;
+  color: var(--primary);
+  font-style: italic;
+  font-size: 1.1em;
+  margin: 1em 0;
+  text-align: center;
 }
 
-/* Extra */
 hr {
   margin: 2rem auto;
   max-width: 600px;
   border: none;
   border-top: 1px solid var(--border);
 }
-p a {
-  color: var(--primary);
-  text-decoration: none;
-}
-p a:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
-}
-h4 {
-  margin-bottom: 0.5rem;
-  margin-top: 1.5rem;
-}
+
 footer {
   text-align: center;
   font-size: 0.9rem;
@@ -152,15 +214,12 @@ footer {
   max-width: 600px;
   margin: 0 auto;
 }
-/* Loading indicators */
-.loading-indicator {
-    display: none;
-    color: var(--primary);
-    font-style: italic;
-    font-size: 1.1em;       /* slightly larger */
-    margin: 1em 0;          /* spacing */
-    text-align: center;      /* center it above results */
+
+footer a {
+  color: var(--primary);
+  text-decoration: none;
 }
-button.loading {
-    background-color: var(--primary-dark);
+footer a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
 }
