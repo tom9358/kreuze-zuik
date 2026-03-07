@@ -12,7 +12,7 @@
     <form id="search-form">
         <div class="input-group">
             <input
-            type="text"
+            type="search"
             id="wordInput"
             name="search_pattern"
             placeholder="b.v. stoet"
@@ -148,7 +148,7 @@
             const loadingDiv = document.getElementById('loading');
             loadingDiv.style.display = 'block';
             resultDiv.innerHTML = '';
-            submitButton.classList.add('loading');            
+            submitButton.classList.add('loading');
             const formData = new FormData(this);
             fetch('/process', { method: 'POST', body: formData })
                 .then(response => response.json())
@@ -189,20 +189,7 @@
                     loadingDiv.style.display = 'none';
                     submitButton.classList.remove('loading');
                     console.error('Error:', err);
-                });
         });
-
-        // Added script for Enter key submission
-        document.addEventListener('DOMContentLoaded', function() {
-            const wordInput = document.getElementById('wordInput');
-            const searchForm = document.getElementById('search-form');
-
-            wordInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    searchForm.submit();
-                }
-            });
         });
     </script>
 </body>

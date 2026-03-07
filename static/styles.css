@@ -55,7 +55,8 @@ label {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="search"] {
   padding: 0.5rem 0.7rem; /* Changed from 0.7rem 0.9rem */
   border: 1px solid var(--border);
   border-radius: var(--radius);
