@@ -56,7 +56,7 @@ label {
 
 input[type="text"],
 input[type="number"] {
-  padding: 0.7rem 0.9rem;
+  padding: 0.5rem 0.7rem; /* Changed from 0.7rem 0.9rem */
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 1rem;
@@ -81,7 +81,7 @@ input:focus {
 }
 
 button {
-  padding: 0.8rem 1rem;
+  padding: 0.6rem 0.8rem;
   background: var(--primary);
   color: #fff;
   border: none;

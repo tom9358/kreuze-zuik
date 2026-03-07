@@ -10,8 +10,6 @@
 <body>
     <h1><a href="https://dideldom.nu/tiedschrift-kreuze/">Kreuze</a> veurbeeldzuiker</h1>
     <form id="search-form">
-        <label for="search_pattern">Zuikterm:</label>
-        <p class="hint">Typ dien tekst!</p>
         <div class="input-group">
             <input
             type="text"
@@ -192,6 +190,19 @@
                     submitButton.classList.remove('loading');
                     console.error('Error:', err);
                 });
+        });
+
+        // Added script for Enter key submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const wordInput = document.getElementById('wordInput');
+            const searchForm = document.getElementById('search-form');
+
+            wordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchForm.submit();
+                }
+            });
         });
     </script>
 </body>
